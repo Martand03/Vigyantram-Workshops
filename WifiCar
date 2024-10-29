@@ -1,0 +1,140 @@
+// Define motor pins
+#define IN1 D1   // IN1 pin for motor A
+#define IN2 D2   // IN2 pin for motor A
+#define IN3 D3   // IN3 pin for motor B
+#define IN4 D4    // IN4 pin for motor B
+
+
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+
+String command;             //String to store app command state.
+ 
+const char* ssid = "Team8
+";
+ESP8266WebServer server(80);
+
+// Function to move forward
+void moveForward() {
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+}
+
+// Function to move backward
+void moveBackward() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+}
+
+// Function to turn right
+void turnRight() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+}
+
+// Function to turn left
+void turnLeft() {
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+}
+
+// Function to stop the car
+void stop() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+}
+
+
+
+void setup() {
+  // Set all the motor control pins to outputs
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+  
+  // Initialize motors to off
+  
+
+    Serial.begin(115200);
+  
+// Connecting WiFi
+ 
+  WiFi.mode(WIFI_AP);
+  WiFi.softAP(ssid);
+ 
+  IPAddress myIP = WiFi.softAPIP();
+  Serial.print("AP IP address: ");
+  Serial.println(myIP);
+// Starting WEB-server
+     server.on ( "/", HTTP_handleRoot );
+     server.onNotFound ( HTTP_handleRoot );
+     server.begin(); 
+
+
+      stop();
+}
+
+void loop() {
+
+  server.handleClient();
+    
+      command = server.arg("State");
+      Serial.println(command);
+      if (command == "S") 
+      {
+        stop();
+        
+        Serial.println("No");
+      }else if(command == "F")
+      {
+        moveForward();
+        
+        Serial.println("F");
+      }
+      else if(command == "B")
+      {
+        moveBackward();
+        
+        Serial.println("B");
+      }
+      else if(command == "L") 
+      {
+        turnLeft();
+        
+        Serial.println("L");
+      }
+      else if(command == "R")
+      {
+        turnRight();
+        
+        Serial.println("R");
+      }
+      else 
+      {
+        stop();
+        Serial.println("S");
+      }
+      
+  
+}
+
+void HTTP_handleRoot(void) {
+ 
+if( server.hasArg("State") ){
+       Serial.println(server.arg("State"));
+  }
+  server.send ( 200, "text/html", "" );
+  
+}
